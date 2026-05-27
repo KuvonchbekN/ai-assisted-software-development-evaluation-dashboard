@@ -22,6 +22,8 @@ import { buildChartData, calculateSummaryMetrics, getTestPassRate } from './data
 import { useEvaluationData } from './data/storage';
 import type {
   AiTool,
+  BuildStatus,
+  DataType,
   DevelopmentMode,
   Difficulty,
   ExperimentRecord,
@@ -42,6 +44,8 @@ const categories: TaskCategory[] = [
 ];
 const modes: DevelopmentMode[] = ['With AI', 'Without AI'];
 const aiTools: AiTool[] = ['Codex', 'ChatGPT', 'GitHub Copilot', 'Cursor', 'None', 'Other'];
+const dataTypes: DataType[] = ['Real', 'Sample'];
+const buildStatuses: BuildStatus[] = ['Passed', 'Failed'];
 
 const emptyTask: Omit<ProgrammingTask, 'id'> = {
   title: '',
@@ -52,8 +56,11 @@ const emptyTask: Omit<ProgrammingTask, 'id'> = {
 
 const emptyExperiment: Omit<ExperimentRecord, 'id'> = {
   taskName: '',
+  category: '',
   developmentMode: 'With AI',
   aiTool: 'Codex',
+  dataType: 'Real',
+  buildStatus: 'Passed',
   completionTimeMinutes: 30,
   testsPassed: 0,
   totalTests: 0,
@@ -71,7 +78,7 @@ function createId(prefix: string) {
 }
 
 function formatNumber(value: number, suffix = '') {
-  return value === 0 ? `0${suffix}` : `${value.toFixed(value % 1 === 0 ? 0 : 1)}${suffix}`;
+  return `${Number(value.toFixed(2)).toString()}${suffix}`;
 }
 
 function App() {
@@ -170,12 +177,29 @@ function App() {
 }
 
 function DashboardPage({ metrics }: { metrics: ReturnType<typeof calculateSummaryMetrics> }) {
+  const usesRealData = metrics.activeDataType === 'Real';
   const stats = [
-    { label: 'Total experiment records', value: metrics.totalRecords.toString(), tone: 'border-slate-300' },
+    {
+      label: `${metrics.activeDataType} experiment records analyzed`,
+      value: metrics.totalRecords.toString(),
+      tone: 'border-slate-300',
+    },
+    { label: 'Real records stored', value: metrics.realRecords.toString(), tone: 'border-blue-300' },
+    { label: 'Sample records stored', value: metrics.sampleRecords.toString(), tone: 'border-slate-300' },
     { label: 'Tasks completed with AI', value: metrics.withAi.count.toString(), tone: 'border-blue-300' },
     {
       label: 'Tasks completed without AI',
       value: metrics.withoutAi.count.toString(),
+      tone: 'border-teal-300',
+    },
+    {
+      label: 'Total AI-assisted time',
+      value: formatNumber(metrics.withAi.totalCompletionTime, ' min'),
+      tone: 'border-blue-300',
+    },
+    {
+      label: 'Total non-AI time',
+      value: formatNumber(metrics.withoutAi.totalCompletionTime, ' min'),
       tone: 'border-teal-300',
     },
     {
@@ -209,19 +233,55 @@ function DashboardPage({ metrics }: { metrics: ReturnType<typeof calculateSummar
       tone: 'border-teal-300',
     },
     {
-      label: 'Average test pass rate with AI',
+      label: 'Average tests/checks pass rate with AI',
       value: formatNumber(metrics.withAi.testPassRate, '%'),
       tone: 'border-blue-300',
     },
     {
-      label: 'Average test pass rate without AI',
+      label: 'Average tests/checks pass rate without AI',
       value: formatNumber(metrics.withoutAi.testPassRate, '%'),
+      tone: 'border-teal-300',
+    },
+    {
+      label: 'AI-assisted tests/checks passed',
+      value: `${metrics.withAi.testsPassed}/${metrics.withAi.totalTests}`,
+      tone: 'border-blue-300',
+    },
+    {
+      label: 'Non-AI tests/checks passed',
+      value: `${metrics.withoutAi.testsPassed}/${metrics.withoutAi.totalTests}`,
+      tone: 'border-teal-300',
+    },
+    {
+      label: 'Build status with AI',
+      value: `${metrics.withAi.buildPassed}/${metrics.withAi.count} passed`,
+      tone: 'border-blue-300',
+    },
+    {
+      label: 'Build status without AI',
+      value: `${metrics.withoutAi.buildPassed}/${metrics.withoutAi.count} passed`,
       tone: 'border-teal-300',
     },
   ];
 
   return (
     <div className="space-y-6">
+      <div
+        className={`rounded-lg border p-4 text-sm shadow-soft ${
+          usesRealData ? 'border-blue-200 bg-blue-50 text-blue-950' : 'border-amber-200 bg-amber-50 text-amber-950'
+        }`}
+      >
+        <p className="font-bold">{usesRealData ? 'Real thesis records are active' : 'Sample data is active'}</p>
+        <p className="mt-1">
+          {usesRealData
+            ? 'Dashboard metrics and charts use the real experiment records. Sample/demo records remain available for demonstration only.'
+            : 'No real records are available yet, so the dashboard is showing sample/demo records. Final thesis analysis should use real records only.'}
+        </p>
+        <p className="mt-1">
+          This dataset is a small-scale practical self-study, not a large statistical study.
+        </p>
+      </div>
+
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {stats.map((stat) => (
           <article
@@ -469,6 +529,7 @@ function ExperimentsPage({
 
     const normalizedRecord = {
       ...form,
+      category: form.category.trim() || 'Uncategorized',
       completionTimeMinutes: Math.max(0, form.completionTimeMinutes),
       testsPassed: Math.min(Math.max(0, form.testsPassed), Math.max(0, form.totalTests)),
       totalTests: Math.max(0, form.totalTests),
@@ -496,8 +557,11 @@ function ExperimentsPage({
   function editExperiment(record: ExperimentRecord) {
     setForm({
       taskName: record.taskName,
+      category: record.category,
       developmentMode: record.developmentMode,
       aiTool: record.aiTool,
+      dataType: record.dataType,
+      buildStatus: record.buildStatus,
       completionTimeMinutes: record.completionTimeMinutes,
       testsPassed: record.testsPassed,
       totalTests: record.totalTests,
@@ -536,6 +600,45 @@ function ExperimentsPage({
               ))}
             </datalist>
           </label>
+
+          <div className="grid gap-4 sm:grid-cols-3">
+            <label>
+              <span className="field-label">Data type</span>
+              <select
+                className="form-field"
+                value={form.dataType}
+                onChange={(event) => setForm({ ...form, dataType: event.target.value as DataType })}
+              >
+                {dataTypes.map((dataType) => (
+                  <option key={dataType}>{dataType}</option>
+                ))}
+              </select>
+            </label>
+
+            <label>
+              <span className="field-label">Category</span>
+              <input
+                className="form-field"
+                value={form.category}
+                onChange={(event) => setForm({ ...form, category: event.target.value })}
+                placeholder="Feature / Documentation"
+                required
+              />
+            </label>
+
+            <label>
+              <span className="field-label">Build status</span>
+              <select
+                className="form-field"
+                value={form.buildStatus}
+                onChange={(event) => setForm({ ...form, buildStatus: event.target.value as BuildStatus })}
+              >
+                {buildStatuses.map((buildStatus) => (
+                  <option key={buildStatus}>{buildStatus}</option>
+                ))}
+              </select>
+            </label>
+          </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <label>
@@ -590,13 +693,13 @@ function ExperimentsPage({
 
           <div className="grid gap-4 sm:grid-cols-3">
             <NumberField
-              label="Tests passed"
+              label="Tests/checks passed"
               value={form.testsPassed}
               min={0}
               onChange={(testsPassed) => setForm({ ...form, testsPassed })}
             />
             <NumberField
-              label="Total tests"
+              label="Total tests/checks"
               value={form.totalTests}
               min={0}
               onChange={(totalTests) => setForm({ ...form, totalTests })}
@@ -632,14 +735,17 @@ function ExperimentsPage({
           <h3 className="text-lg font-bold">Experiment records</h3>
         </div>
         <div className="overflow-x-auto">
-          <table className="min-w-[980px] divide-y divide-line text-sm">
+          <table className="min-w-[1180px] divide-y divide-line text-sm">
             <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
               <tr>
                 <th className="px-5 py-3">Task</th>
+                <th className="px-5 py-3">Data</th>
+                <th className="px-5 py-3">Category</th>
                 <th className="px-5 py-3">Mode</th>
                 <th className="px-5 py-3">Tool</th>
+                <th className="px-5 py-3">Build</th>
                 <th className="px-5 py-3">Time</th>
-                <th className="px-5 py-3">Tests</th>
+                <th className="px-5 py-3">Tests/checks</th>
                 <th className="px-5 py-3">Lint</th>
                 <th className="px-5 py-3">Quality</th>
                 <th className="px-5 py-3 text-right">Actions</th>
@@ -655,6 +761,18 @@ function ExperimentsPage({
                   <td className="px-5 py-4">
                     <span
                       className={`rounded-full px-2.5 py-1 text-xs font-bold ${
+                        record.dataType === 'Real'
+                          ? 'bg-blue-100 text-blue-800'
+                          : 'bg-slate-100 text-slate-700'
+                      }`}
+                    >
+                      {record.dataType}
+                    </span>
+                  </td>
+                  <td className="px-5 py-4">{record.category}</td>
+                  <td className="px-5 py-4">
+                    <span
+                      className={`rounded-full px-2.5 py-1 text-xs font-bold ${
                         record.developmentMode === 'With AI'
                           ? 'bg-blue-50 text-blue-800'
                           : 'bg-teal-50 text-teal-800'
@@ -664,6 +782,17 @@ function ExperimentsPage({
                     </span>
                   </td>
                   <td className="px-5 py-4">{record.aiTool}</td>
+                  <td className="px-5 py-4">
+                    <span
+                      className={`rounded-full px-2.5 py-1 text-xs font-bold ${
+                        record.buildStatus === 'Passed'
+                          ? 'bg-emerald-50 text-emerald-800'
+                          : 'bg-red-50 text-red-800'
+                      }`}
+                    >
+                      {record.buildStatus}
+                    </span>
+                  </td>
                   <td className="px-5 py-4">{record.completionTimeMinutes} min</td>
                   <td className="px-5 py-4">
                     {record.testsPassed}/{record.totalTests}

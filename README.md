@@ -6,6 +6,8 @@ This React + Vite application is the practical engineering component for the mas
 
 The dashboard records programming tasks and experiment results completed with AI assistance and without AI assistance. It is intentionally simple, local, and screenshot-friendly for thesis documentation.
 
+The current dataset includes **8 real thesis experiment records** and a separate set of sample/demo records. Dashboard metrics and charts automatically prefer real records when any real records exist.
+
 ## Purpose
 
 The application supports a controlled comparison of software development work under two conditions:
@@ -20,24 +22,29 @@ The goal is to make productivity and quality differences visible through consist
 Each experiment record stores:
 
 - Task name
+- Category
 - Development mode: With AI or Without AI
 - AI tool used
+- Data type: Real or Sample
+- Build status
 - Completion time in minutes
-- Tests passed
-- Total tests
+- Verification checks passed
+- Total verification checks
 - Lint errors
 - Code quality score from 1 to 10
 - Notes
 
 The dashboard calculates:
 
-- Total experiment records
+- Real or sample experiment records currently analyzed
 - Number of tasks completed with AI
 - Number of tasks completed without AI
+- Total completion time for both modes
 - Average completion time for both modes
 - Average quality score for both modes
 - Average lint errors for both modes
-- Average test pass rate for both modes
+- Verification check pass rate for both modes
+- Build pass counts for both modes
 
 ## Thesis Support
 
@@ -45,9 +52,11 @@ The app helps structure the empirical part of the thesis by making each task mea
 
 - Developer productivity through completion time
 - Code quality through a manual quality score
-- Correctness through test pass rate
+- Correctness through verification check pass rate
 - Maintainability signals through lint error counts
 - Qualitative observations through experiment notes
+
+The real dataset is a small-scale practical self-study. It is useful for structured thesis analysis and screenshots, but it should not be presented as a large statistical study.
 
 ## Example Tasks
 
@@ -62,11 +71,29 @@ The app includes project-specific starter tasks based on this dashboard implemen
 
 ## Data Storage
 
-All data is stored in the browser using `localStorage`. There is no backend. Sample data is loaded automatically the first time the app is opened so the dashboard is not empty.
+All data is stored in the browser using `localStorage`. There is no backend. Real thesis records and sample/demo records are loaded automatically the first time the app is opened. Sample data is only for demonstration; final analysis should be based on records marked `Real`.
+
+## Real Experiment Results
+
+The real thesis records currently produce these calculated results:
+
+- With AI tasks: 4
+- Without AI tasks: 4
+- Total AI-assisted time: 107 minutes
+- Total non-AI time: 133 minutes
+- Average AI-assisted time: 26.75 minutes
+- Average non-AI time: 33.25 minutes
+- Average AI-assisted quality score: 7.75 / 10
+- Average non-AI quality score: 7.75 / 10
+- AI-assisted verification checks passed: 13 / 13
+- Non-AI verification checks passed: 23 / 23
+- Verification check pass rate: 100% for both groups
+- Build status: passed for all real records
+- Lint errors: 0 for all real records
 
 ## Sample Data Calibration
 
-The initial experiment records are illustrative seed data, not primary thesis results and not a claim that this exact project was implemented twice. They use tasks from this dashboard project and are calibrated from published research so the first dashboard view uses plausible ratios:
+The sample experiment records are illustrative seed data, not primary thesis results and not a claim that this exact project was implemented twice. They use tasks from this dashboard project and are calibrated from published research so the app can still demonstrate behavior if real records are removed:
 
 - A controlled GitHub Copilot experiment reported that developers with Copilot completed a JavaScript task **55.8% faster** than the control group.
 - McKinsey reported strong time savings for common software development work, including writing new code in nearly half the time and refactoring in roughly two-thirds the time, while code quality was only marginally better when developers reviewed and iterated on AI output.

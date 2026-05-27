@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
-import { sampleExperiments, sampleTasks } from './sampleData';
+import { realExperiments, sampleExperiments, sampleTasks } from './sampleData';
 import type { ExperimentRecord, ProgrammingTask } from '../types/evaluation';
 
 const TASKS_KEY = 'thesis-evaluation-tasks';
 const EXPERIMENTS_KEY = 'thesis-evaluation-experiments';
 const SEED_VERSION_KEY = 'thesis-evaluation-seed-version';
-const CURRENT_SEED_VERSION = 'project-specific-research-calibrated-2026-05-v2';
+const CURRENT_SEED_VERSION = 'real-thesis-records-2026-05';
 const LEGACY_SAMPLE_TASK_IDS = new Set([
   'task-validation',
   'task-delete-bug',
@@ -22,6 +22,24 @@ function readStoredValue<T>(key: string, fallback: T): T {
   } catch {
     return fallback;
   }
+}
+
+function normalizeExperimentRecord(record: Partial<ExperimentRecord>): ExperimentRecord {
+  return {
+    id: record.id ?? `experiment-${Date.now()}`,
+    taskName: record.taskName ?? '',
+    category: record.category ?? 'Uncategorized',
+    developmentMode: record.developmentMode ?? 'With AI',
+    aiTool: record.aiTool ?? 'None',
+    dataType: record.dataType ?? 'Sample',
+    buildStatus: record.buildStatus ?? 'Passed',
+    completionTimeMinutes: record.completionTimeMinutes ?? 0,
+    testsPassed: record.testsPassed ?? 0,
+    totalTests: record.totalTests ?? 0,
+    lintErrors: record.lintErrors ?? 0,
+    qualityScore: record.qualityScore ?? 1,
+    notes: record.notes ?? '',
+  };
 }
 
 export function useLocalStorageState<T>(key: string, fallback: T) {
@@ -56,11 +74,19 @@ export function useEvaluationData() {
       return looksLikeLegacyTaskSeedData ? sampleTasks : currentTasks;
     });
     setExperiments((currentExperiments) => {
-      const looksLikeUntouchedSeedData = currentExperiments.every((record) =>
+      const normalizedExperiments = currentExperiments.map(normalizeExperimentRecord);
+      const looksLikeUntouchedSeedData = normalizedExperiments.every((record) =>
         record.id.startsWith('exp-'),
       );
 
-      return looksLikeUntouchedSeedData ? sampleExperiments : currentExperiments;
+      if (looksLikeUntouchedSeedData) {
+        return sampleExperiments;
+      }
+
+      const currentIds = new Set(normalizedExperiments.map((record) => record.id));
+      const missingRealExperiments = realExperiments.filter((record) => !currentIds.has(record.id));
+
+      return [...missingRealExperiments, ...normalizedExperiments];
     });
     localStorage.setItem(SEED_VERSION_KEY, CURRENT_SEED_VERSION);
   }, [setExperiments, setTasks]);
