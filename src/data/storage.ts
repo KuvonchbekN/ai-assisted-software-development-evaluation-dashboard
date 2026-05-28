@@ -5,14 +5,34 @@ import type { ExperimentRecord, ProgrammingTask } from '../types/evaluation';
 const TASKS_KEY = 'thesis-evaluation-tasks';
 const EXPERIMENTS_KEY = 'thesis-evaluation-experiments';
 const SEED_VERSION_KEY = 'thesis-evaluation-seed-version';
-const CURRENT_SEED_VERSION = 'real-thesis-records-2026-05';
+const CURRENT_SEED_VERSION = 'real-thesis-records-only-2026-05';
 const LEGACY_SAMPLE_TASK_IDS = new Set([
+  'task-project-setup',
+  'task-dashboard-metrics',
+  'task-task-crud',
+  'task-experiment-crud',
+  'task-chart-comparisons',
+  'task-local-storage-readme',
   'task-validation',
   'task-delete-bug',
   'task-crud-tests',
   'task-service-refactor',
   'task-search-filter',
   'task-error-handling',
+]);
+const LEGACY_SAMPLE_EXPERIMENT_IDS = new Set([
+  'exp-ai-project-setup',
+  'exp-manual-project-setup',
+  'exp-ai-dashboard-metrics',
+  'exp-manual-dashboard-metrics',
+  'exp-ai-task-crud',
+  'exp-manual-task-crud',
+  'exp-ai-experiment-crud',
+  'exp-manual-experiment-crud',
+  'exp-ai-chart-comparisons',
+  'exp-manual-chart-comparisons',
+  'exp-ai-local-storage-readme',
+  'exp-manual-local-storage-readme',
 ]);
 
 function readStoredValue<T>(key: string, fallback: T): T {
@@ -42,6 +62,17 @@ function normalizeExperimentRecord(record: Partial<ExperimentRecord>): Experimen
   };
 }
 
+function normalizeProgrammingTask(task: Partial<ProgrammingTask>): ProgrammingTask {
+  return {
+    id: task.id ?? `task-${Date.now()}`,
+    title: task.title ?? '',
+    description: task.description ?? '',
+    dataType: task.dataType ?? 'Sample',
+    difficulty: task.difficulty ?? 'Easy',
+    category: task.category ?? 'Feature',
+  };
+}
+
 export function useLocalStorageState<T>(key: string, fallback: T) {
   const [value, setValue] = useState<T>(() => readStoredValue(key, fallback));
 
@@ -67,26 +98,26 @@ export function useEvaluationData() {
     }
 
     setTasks((currentTasks) => {
-      const looksLikeLegacyTaskSeedData = currentTasks.every((task) =>
-        LEGACY_SAMPLE_TASK_IDS.has(task.id),
+      const normalizedTasks = currentTasks.map(normalizeProgrammingTask);
+      const tasksWithoutLegacySamples = normalizedTasks.filter(
+        (task) => !LEGACY_SAMPLE_TASK_IDS.has(task.id),
       );
 
-      return looksLikeLegacyTaskSeedData ? sampleTasks : currentTasks;
+      const currentIds = new Set(tasksWithoutLegacySamples.map((task) => task.id));
+      const missingSeedTasks = sampleTasks.filter((task) => !currentIds.has(task.id));
+
+      return [...missingSeedTasks, ...tasksWithoutLegacySamples];
     });
     setExperiments((currentExperiments) => {
       const normalizedExperiments = currentExperiments.map(normalizeExperimentRecord);
-      const looksLikeUntouchedSeedData = normalizedExperiments.every((record) =>
-        record.id.startsWith('exp-'),
+      const experimentsWithoutLegacySamples = normalizedExperiments.filter(
+        (record) => !LEGACY_SAMPLE_EXPERIMENT_IDS.has(record.id),
       );
 
-      if (looksLikeUntouchedSeedData) {
-        return sampleExperiments;
-      }
-
-      const currentIds = new Set(normalizedExperiments.map((record) => record.id));
+      const currentIds = new Set(experimentsWithoutLegacySamples.map((record) => record.id));
       const missingRealExperiments = realExperiments.filter((record) => !currentIds.has(record.id));
 
-      return [...missingRealExperiments, ...normalizedExperiments];
+      return [...missingRealExperiments, ...experimentsWithoutLegacySamples];
     });
     localStorage.setItem(SEED_VERSION_KEY, CURRENT_SEED_VERSION);
   }, [setExperiments, setTasks]);

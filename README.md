@@ -6,7 +6,7 @@ This React + Vite application is the practical engineering component for the mas
 
 The dashboard records programming tasks and experiment results completed with AI assistance and without AI assistance. It is intentionally simple, local, and screenshot-friendly for thesis documentation.
 
-The current dataset includes **8 real thesis experiment records** and a separate set of sample/demo records. Dashboard metrics and charts automatically prefer real records when any real records exist.
+The current dataset includes **8 real thesis experiment records**. The data model still supports records marked `Sample`, but no demo/sample records are seeded by default.
 
 ## Purpose
 
@@ -58,20 +58,24 @@ The app helps structure the empirical part of the thesis by making each task mea
 
 The real dataset is a small-scale practical self-study. It is useful for structured thesis analysis and screenshots, but it should not be presented as a large statistical study.
 
-## Example Tasks
+## Task Records
 
-The app includes project-specific starter tasks based on this dashboard implementation:
+The Tasks section contains 8 real thesis task definitions that correspond to the 8 real experiment records.
 
-- Initialize React Vite TypeScript project
-- Build dashboard metric cards
-- Implement task management CRUD
-- Implement experiment results CRUD
-- Add Recharts comparison charts
-- Add localStorage persistence and README
+Real thesis tasks:
+
+- Add sample vs real data distinction
+- Add Methodology page in app
+- Add CSV export for experiment records
+- Improve README methodology section
+- Fix/extend experiment form validation
+- Refactor metric calculation helpers
+- Improve dashboard warning text
+- Manually verify charts and data display
 
 ## Data Storage
 
-All data is stored in the browser using `localStorage`. There is no backend. Real thesis records and sample/demo records are loaded automatically the first time the app is opened. Sample data is only for demonstration; final analysis should be based on records marked `Real`.
+All data is stored in the browser using `localStorage`. There is no backend. Real thesis records are loaded automatically the first time the app is opened. The application can still store records marked `Sample` if they are entered manually, but final analysis should be based on records marked `Real`.
 
 ## Real Experiment Results
 
@@ -90,22 +94,6 @@ The real thesis records currently produce these calculated results:
 - Verification check pass rate: 100% for both groups
 - Build status: passed for all real records
 - Lint errors: 0 for all real records
-
-## Sample Data Calibration
-
-The sample experiment records are illustrative seed data, not primary thesis results and not a claim that this exact project was implemented twice. They use tasks from this dashboard project and are calibrated from published research so the app can still demonstrate behavior if real records are removed:
-
-- A controlled GitHub Copilot experiment reported that developers with Copilot completed a JavaScript task **55.8% faster** than the control group.
-- McKinsey reported strong time savings for common software development work, including writing new code in nearly half the time and refactoring in roughly two-thirds the time, while code quality was only marginally better when developers reviewed and iterated on AI output.
-- The 2024 DORA report found AI adoption was associated with individual improvements such as code quality and documentation quality, but also warned about delivery stability and throughput tradeoffs.
-- METR's 2025 randomized controlled trial found experienced open-source developers working on familiar repositories took **19% longer** with AI tools, so the seed data includes one complex task where AI is slower.
-
-Sources:
-
-- [Microsoft Research: The Impact of AI on Developer Productivity](https://www.microsoft.com/en-us/research/publication/the-impact-of-ai-on-developer-productivity-evidence-from-github-copilot/)
-- [McKinsey: Unleashing developer productivity with generative AI](https://www.mckinsey.com/capabilities/tech-and-ai/our-insights/unleashing-developer-productivity-with-generative-ai)
-- [DORA: 2024 Accelerate State of DevOps Report](https://dora.dev/research/2024/dora-report/)
-- [METR: Measuring the Impact of Early-2025 AI on Experienced Open-Source Developer Productivity](https://metr.org/blog/2025-07-10-early-2025-ai-experienced-os-dev-study/)
 
 ## Install Dependencies
 

@@ -50,6 +50,7 @@ const buildStatuses: BuildStatus[] = ['Passed', 'Failed'];
 const emptyTask: Omit<ProgrammingTask, 'id'> = {
   title: '',
   description: '',
+  dataType: 'Real',
   difficulty: 'Easy',
   category: 'Feature',
 };
@@ -274,8 +275,8 @@ function DashboardPage({ metrics }: { metrics: ReturnType<typeof calculateSummar
         <p className="font-bold">{usesRealData ? 'Real thesis records are active' : 'Sample data is active'}</p>
         <p className="mt-1">
           {usesRealData
-            ? 'Dashboard metrics and charts use the real experiment records. Sample/demo records remain available for demonstration only.'
-            : 'No real records are available yet, so the dashboard is showing sample/demo records. Final thesis analysis should use real records only.'}
+            ? 'Dashboard metrics and charts use the real experiment records. The data model still supports manually entered sample records, but no demo records are seeded by default.'
+            : 'No real records are available yet, so the dashboard is showing manually entered sample records. Final thesis analysis should use real records only.'}
         </p>
         <p className="mt-1">
           This dataset is a small-scale practical self-study, not a large statistical study.
@@ -381,6 +382,7 @@ function TasksPage({
     setForm({
       title: task.title,
       description: task.description,
+      dataType: task.dataType,
       difficulty: task.difficulty,
       category: task.category,
     });
@@ -422,6 +424,19 @@ function TasksPage({
 
           <div className="grid gap-4 sm:grid-cols-2">
             <label>
+              <span className="field-label">Data type</span>
+              <select
+                className="form-field"
+                value={form.dataType}
+                onChange={(event) => setForm({ ...form, dataType: event.target.value as DataType })}
+              >
+                {dataTypes.map((dataType) => (
+                  <option key={dataType}>{dataType}</option>
+                ))}
+              </select>
+            </label>
+
+            <label>
               <span className="field-label">Difficulty</span>
               <select
                 className="form-field"
@@ -433,7 +448,9 @@ function TasksPage({
                 ))}
               </select>
             </label>
+          </div>
 
+          <div className="grid gap-4 sm:grid-cols-2">
             <label>
               <span className="field-label">Category</span>
               <select
@@ -464,6 +481,7 @@ function TasksPage({
             <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
               <tr>
                 <th className="px-5 py-3">Task</th>
+                <th className="px-5 py-3">Data</th>
                 <th className="px-5 py-3">Difficulty</th>
                 <th className="px-5 py-3">Category</th>
                 <th className="px-5 py-3 text-right">Actions</th>
@@ -475,6 +493,17 @@ function TasksPage({
                   <td className="px-5 py-4">
                     <p className="font-semibold">{task.title}</p>
                     <p className="mt-1 max-w-xl text-slate-600">{task.description}</p>
+                  </td>
+                  <td className="px-5 py-4">
+                    <span
+                      className={`rounded-full px-2.5 py-1 text-xs font-bold ${
+                        task.dataType === 'Real'
+                          ? 'bg-blue-100 text-blue-800'
+                          : 'bg-slate-100 text-slate-700'
+                      }`}
+                    >
+                      {task.dataType}
+                    </span>
                   </td>
                   <td className="px-5 py-4">{task.difficulty}</td>
                   <td className="px-5 py-4">{task.category}</td>

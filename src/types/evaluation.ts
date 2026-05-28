@@ -20,6 +20,7 @@ export interface ProgrammingTask {
   id: string;
   title: string;
   description: string;
+  dataType: DataType;
   difficulty: Difficulty;
   category: TaskCategory;
 }
