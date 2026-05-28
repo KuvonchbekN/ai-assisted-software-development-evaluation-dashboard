@@ -6,7 +6,7 @@ This React + Vite application is the practical engineering component for the mas
 
 The dashboard records programming tasks and experiment results completed with AI assistance and without AI assistance. It is intentionally simple, local, and screenshot-friendly for thesis documentation.
 
-The current dataset includes **8 real thesis experiment records**. The data model still supports records marked `Sample`, but no demo/sample records are seeded by default.
+The current dataset includes **8 real thesis experiment records**. No demo/sample records are seeded by default.
 
 ## Purpose
 
@@ -25,7 +25,6 @@ Each experiment record stores:
 - Category
 - Development mode: With AI or Without AI
 - AI tool used
-- Data type: Real or Sample
 - Build status
 - Completion time in minutes
 - Verification checks passed
@@ -75,7 +74,7 @@ Real thesis tasks:
 
 ## Data Storage
 
-All data is stored in the browser using `localStorage`. There is no backend. Real thesis records are loaded automatically the first time the app is opened. The application can still store records marked `Sample` if they are entered manually, but final analysis should be based on records marked `Real`.
+All data is stored in the browser using `localStorage`. There is no backend. Real thesis records are loaded automatically the first time the app is opened, and final analysis should be based on those real records.
 
 ## Real Experiment Results
 

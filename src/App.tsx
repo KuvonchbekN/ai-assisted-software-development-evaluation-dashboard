@@ -178,15 +178,12 @@ function App() {
 }
 
 function DashboardPage({ metrics }: { metrics: ReturnType<typeof calculateSummaryMetrics> }) {
-  const usesRealData = metrics.activeDataType === 'Real';
   const stats = [
     {
-      label: `${metrics.activeDataType} experiment records analyzed`,
+      label: 'Real experiment records analyzed',
       value: metrics.totalRecords.toString(),
       tone: 'border-slate-300',
     },
-    { label: 'Real records stored', value: metrics.realRecords.toString(), tone: 'border-blue-300' },
-    { label: 'Sample records stored', value: metrics.sampleRecords.toString(), tone: 'border-slate-300' },
     { label: 'Tasks completed with AI', value: metrics.withAi.count.toString(), tone: 'border-blue-300' },
     {
       label: 'Tasks completed without AI',
@@ -267,16 +264,10 @@ function DashboardPage({ metrics }: { metrics: ReturnType<typeof calculateSummar
 
   return (
     <div className="space-y-6">
-      <div
-        className={`rounded-lg border p-4 text-sm shadow-soft ${
-          usesRealData ? 'border-blue-200 bg-blue-50 text-blue-950' : 'border-amber-200 bg-amber-50 text-amber-950'
-        }`}
-      >
-        <p className="font-bold">{usesRealData ? 'Real thesis records are active' : 'Sample data is active'}</p>
+      <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-950 shadow-soft">
+        <p className="font-bold">Real thesis records are active</p>
         <p className="mt-1">
-          {usesRealData
-            ? 'Dashboard metrics and charts use the real experiment records. The data model still supports manually entered sample records, but no demo records are seeded by default.'
-            : 'No real records are available yet, so the dashboard is showing manually entered sample records. Final thesis analysis should use real records only.'}
+          Dashboard metrics and charts use the real experiment records. The data model still supports manually entered sample records, but no demo records are seeded by default.
         </p>
         <p className="mt-1">
           This dataset is a small-scale practical self-study, not a large statistical study.
@@ -481,7 +472,6 @@ function TasksPage({
             <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
               <tr>
                 <th className="px-5 py-3">Task</th>
-                <th className="px-5 py-3">Data</th>
                 <th className="px-5 py-3">Difficulty</th>
                 <th className="px-5 py-3">Category</th>
                 <th className="px-5 py-3 text-right">Actions</th>
@@ -493,17 +483,6 @@ function TasksPage({
                   <td className="px-5 py-4">
                     <p className="font-semibold">{task.title}</p>
                     <p className="mt-1 max-w-xl text-slate-600">{task.description}</p>
-                  </td>
-                  <td className="px-5 py-4">
-                    <span
-                      className={`rounded-full px-2.5 py-1 text-xs font-bold ${
-                        task.dataType === 'Real'
-                          ? 'bg-blue-100 text-blue-800'
-                          : 'bg-slate-100 text-slate-700'
-                      }`}
-                    >
-                      {task.dataType}
-                    </span>
                   </td>
                   <td className="px-5 py-4">{task.difficulty}</td>
                   <td className="px-5 py-4">{task.category}</td>
@@ -764,11 +743,10 @@ function ExperimentsPage({
           <h3 className="text-lg font-bold">Experiment records</h3>
         </div>
         <div className="overflow-x-auto">
-          <table className="min-w-[1180px] divide-y divide-line text-sm">
+          <table className="min-w-[1080px] divide-y divide-line text-sm">
             <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
               <tr>
                 <th className="px-5 py-3">Task</th>
-                <th className="px-5 py-3">Data</th>
                 <th className="px-5 py-3">Category</th>
                 <th className="px-5 py-3">Mode</th>
                 <th className="px-5 py-3">Tool</th>
@@ -786,17 +764,6 @@ function ExperimentsPage({
                   <td className="px-5 py-4">
                     <p className="font-semibold">{record.taskName}</p>
                     <p className="mt-1 max-w-md text-slate-600">{record.notes}</p>
-                  </td>
-                  <td className="px-5 py-4">
-                    <span
-                      className={`rounded-full px-2.5 py-1 text-xs font-bold ${
-                        record.dataType === 'Real'
-                          ? 'bg-blue-100 text-blue-800'
-                          : 'bg-slate-100 text-slate-700'
-                      }`}
-                    >
-                      {record.dataType}
-                    </span>
                   </td>
                   <td className="px-5 py-4">{record.category}</td>
                   <td className="px-5 py-4">
